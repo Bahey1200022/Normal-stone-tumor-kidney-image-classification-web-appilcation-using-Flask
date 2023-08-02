@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>MLP_model_deployed</title>
+  <style>
+    
+    
+    .centered {
+      text-align: center;
+    }
+    body, html {
+      height: 100%;
+      margin: 0;
+    }
+    
+    .container {
+      display: flex;
+      height: 100%;
+    }
+    
+    .split {
+      flex: 1;
+      height: 100%;
+    }
+    
+    
+  
+
+   </style>
+</head>
+<body>
+  <h1 class="centered">Kidney stone and cancer detection model</h1>
+
+  <h1>Upload a kidney scan</h1>
+
+  <div class="container">
+    <div class="split left">
+        <input type="file" id="img1" name="signal" accept=".jpeg, .jpg,.png">
+        <br>
+        <img id="originalimg1" width="500" height="500">  <br>
+
+      </div>
+    <div class="split right">
+       condition obtained: <span id="prediction"></span>
+    </div>
+  </div>
+
+
+
+
+
+
+
+  <script>
+    var div1 = document.getElementById('originalimg1');
+    var SROutput = document.getElementById("prediction");
+    var x="1"
+    img1.addEventListener('change', function (event) {
+      // Get the selected file
+      div1.setAttribute('src', '');
+
+      var isImageLoaded = false; // Flag to indicate if the image has finished loading
+    
+      var file = event.target.files[0];
+      var img = new Image();
+    img.onload = function() {
+      size_img1x = img.naturalWidth;
+      size_img1y = img.naturalHeight;
+      isImageLoaded = true; // Set the flag to true when the image has finished loading
+      handleImageDimensions(size_img1x, size_img1y); 
+    }
+    
+    img.src = URL.createObjectURL(file);
+    function handleImageDimensions(width, height) {
+      // You can perform additional operations with the dimensions here
+      x1=width;
+      y1=height;
+      
+    }
+    
+    // Check if the image has finished loading and the dimensions are available
+    if (isImageLoaded) {
+      handleImageDimensions(size_img1x, size_img1y);
+    } else {
+      console.log('Image is still loading...');
+    }
+    
+      // Read the file as a data URL
+      var reader = new FileReader();
+      reader.onload = function (event) {
+        div1.src = event.target.result;
+
+        // Send the data URL to the Flask server using an AJAX request
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/upload', true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+
+
+        xhr.onreadystatechange = function() {
+          if (xhr.readyState === XMLHttpRequest.DONE) {
+              if (xhr.status === 200) {
+                  // Request succeeded
+                  var response = JSON.parse(xhr.responseText);
+                  var predictionResult = response.prediction;
+      
+                  // Process the predictionResult as needed
+                  console.log('Prediction Result:', predictionResult[0]);
+                  SROutput.innerHTML=predictionResult[0]
+              } else {
+                  // Request failed
+                  console.error('Request failed with status:', xhr.status);
+              }
+          }
+      };
+
+
+
+
+
+
+
+        xhr.send(JSON.stringify({ image_data: event.target.result }));
+    
+        // div1.setAttribute("src", '/image1?' + new Date().getTime());
+    
+        
+    
+    
+        var uploaded_image = reader.result;
+      };
+      reader.readAsDataURL(file);
+      
+    
+    
+    
+    })
+      
+  </script>
+</body>
+</html>
